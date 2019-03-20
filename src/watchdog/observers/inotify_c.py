@@ -332,6 +332,14 @@ class Inotify(object):
                         del self._wd_for_path[move_src_path]
                         self._wd_for_path[inotify_event.src_path] = moved_wd
                         self._path_for_wd[moved_wd] = inotify_event.src_path
+                        if self.is_recursive:
+                            for _path, _wd in self._wd_for_path.items():
+                                if _path.startswith(move_src_path):
+                                    moved_wd = self._wd_for_path[_path]
+                                    del self._wd_for_path[_path]
+                                    _move_to_path = _path.replace(move_src_path, inotify_event.src_path)
+                                    self._wd_for_path[_move_to_path] = moved_wd
+                                    self._path_for_wd[moved_wd] = _move_to_path
                     src_path = os.path.join(wd_path, name)
                     inotify_event = InotifyEvent(wd, mask, cookie, name, src_path)
 
